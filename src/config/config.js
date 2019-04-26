@@ -1,13 +1,13 @@
-var config = {
+
+export default {
   type: Phaser.AUTO,
   scale: {
     mode:Phaser.Scale.FIT,
     autoCenter:Phaser.Scale.CENTER_BOTH,
     parent: "thegame",
-    width: 800,
+    width: 400,
     height: 600,
   },
-
   render: {
     pixelArt: true
   },

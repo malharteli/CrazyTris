@@ -275,7 +275,6 @@
 			for(var j=0; j<pg.length; j++) npg.push(pg[j].x, pg[j].y);
 			result.push(npg);
 		}
-		console.log(result)
 		return result;
 	}
 

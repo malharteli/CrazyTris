@@ -13,3 +13,9 @@ TO DO
     -- POLYK
         -- Slicer
   Touch Controls?
+
+
+STEP 1:
+  Import and implement Shapes and Matter PHYSICS
+  Import and implement PolyK slicing functions
+  - Create automated system to slice shapes automatically
