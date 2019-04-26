@@ -1,3 +1,6 @@
+import PhaserMatterCollisionPlugin from "phaser-matter-collision-plugin";
+var decomp = require('poly-decomp');
+import PolyK from "../utils/polyk";
 
 export default {
   type: Phaser.AUTO,
@@ -11,7 +14,26 @@ export default {
   render: {
     pixelArt: true
   },
+  plugins: {
+    scene: [
+      {
+        plugin: PhaserMatterCollisionPlugin, // The plugin class
+        key: "matterCollision", // Where to store in Scene.Systems, e.g. scene.sys.matterCollision
+        mapping: "matterCollision" // Where to store in the Scene, e.g. scene.matterCollision
+      },
+      {
+        plugin: decomp,
+        key: "decomp",
+        mapping: "decomp"
+      },
+      {
+        plugin: PolyK,
+        key: "PolyK",
+        mapping: "PolyK"
+      }
 
+    ]
+  },
   physics: {
     default: "matter",
     matter: {

@@ -1,6 +1,6 @@
 import "phaser";
 import "../utils/polyk";
-import 'poly-decomp'
+import "poly-decomp";
 
 export default class MainScene extends Phaser.Scene {
   constructor() {
@@ -14,7 +14,7 @@ export default class MainScene extends Phaser.Scene {
       10,
       10,
       game.config.width - 20,
-      game.config.height - 20
+      game.config.height - 40
     );
     // const arrow = [ 0,20, 84,20, 84,0, 120,50, 84,100, 84,80, 0,80 ];
     // var poly = this.add.polygon(400, 300, arrow);
@@ -33,31 +33,65 @@ export default class MainScene extends Phaser.Scene {
     //     flagInternal: true
     //   }
     // })
-    this.matter.add.rectangle(
+    const testBlock = this.matter.add.rectangle(
       game.config.width / 2 - 50,
       game.config.width / 2,
       100,
       300
     );
-    this.matter.add.polygon(100,200, 6, 75)
-    this.matter.add.fromVertices(200, 200, [ 0,20, 84,20, 84,0, 120,50, 84,100, 84,80, 0,80 ], 75 )
-    this.matter.add.circle(
-      100,
-      100,
-      50,
-      10
-    )
+    this.matter.add.polygon(100, 200, 6, 75);
+    this.matter.add.fromVertices(
+      200,
+      200,
+      [0, 20, 84, 20, 84, 0, 120, 50, 84, 100, 84, 80, 0, 80],
+      75
+    );
+    this.matter.add.circle(100, 100, 50, 10);
+    // Sensors
+    const lSideSensor = this.matter.add.rectangle(
+      10,
+      game.config.height / 2,
+      2,
+      game.config.height,
+      { isStatic: true, isSensor: true }
+    );
+    const rSideSensor = this.matter.add.rectangle(
+      game.config.width,
+      game.config.height / 2,
+      2,
+      game.config.height,
+      { isStatic: true, isSensor: true }
+    );
+    //const lSideSensor- detects if objects are hitting the left side
+    //const rSideSensor- detects if objects are hitting the right side
 
-    console.log(this.matter.world.localWorld.bodies)
+    // const sensor = this.matter.add.rectangle(game.config.width/2, game.config.height-25, game.config.width, 50, { isStatic: true, isSensor: true });
+    let sensorList = [];
+    let px = 1;
+    while (px < 20) {
+      const sensor = this.matter.add.rectangle(
+        game.config.width / 2,
+        game.config.height - 25 * px,
+        game.config.width,
+        50,
+        { isStatic: true, isSensor: true }
+      );
+      // MatterCollission
+      this.matterCollision.addOnCollideStart({
+        objectA: testBlock,
+        callback: eventData => {
+          console.log("sensor detection");
+        }
+      })
+      sensorList.push(sensor);
+      px++
+    }
+    console.log(this.matter.world.localWorld.bodies);
     this.lineGraphics = this.add.graphics(2);
     this.input.on("pointerdown", this.startDrawing, this);
     this.input.on("pointerup", this.stopDrawing, this);
     this.input.on("pointermove", this.keepDrawing, this);
     this.isDrawing = false;
-  }
-
-  autoDraw(){
-    let bodies = this.matter.world.localWorld.bodies;
   }
 
   startDrawing() {
@@ -77,8 +111,14 @@ export default class MainScene extends Phaser.Scene {
   stopDrawing(pointer) {
     this.lineGraphics.clear();
     this.isDrawing = false;
-    let bodies = this.matter.world.localWorld.bodies;
-    console.log('body shapes', bodies)
+    let bodies = [];
+    this.matter.world.localWorld.bodies.forEach(body => {
+      if (!body.isSensor) {
+        console.log("body isn't sensor");
+        bodies.push(body);
+      }
+    });
+    console.log("body shapes", bodies);
     let toBeSliced = [];
     let toBeCreated = [];
     for (let i = 0; i < bodies.length; i++) {
@@ -101,13 +141,13 @@ export default class MainScene extends Phaser.Scene {
         });
       }
     }
-    console.log('to Be Sliced', toBeSliced)
+    console.log("to Be Sliced", toBeSliced);
     toBeSliced.forEach(
       function(body) {
         this.matter.world.remove(body);
       }.bind(this)
     );
-    console.log('toBeCreated', toBeCreated)
+    console.log("toBeCreated", toBeCreated);
     toBeCreated.forEach(
       function(points) {
         let polyObject = [];
@@ -118,15 +158,12 @@ export default class MainScene extends Phaser.Scene {
           });
         }
         // console.log('list of object positions', polyObject)
-        let sliceCenter = Phaser.Physics.Matter.Matter.Vertices.centre(polyObject)
-        this.matter.add.fromVertices(
-          sliceCenter.x,
-          sliceCenter.y,
-          polyObject,
-          {
-            isStatic: false
-          }
+        let sliceCenter = Phaser.Physics.Matter.Matter.Vertices.centre(
+          polyObject
         );
+        this.matter.add.fromVertices(sliceCenter.x, sliceCenter.y, polyObject, {
+          isStatic: false
+        });
       }.bind(this)
     );
   }
