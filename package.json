@@ -4,7 +4,8 @@
   "description": "Not Tetris, but its built with Phaser",
   "main": "src/index.js",
   "scripts": {
-    "start": "webpack-dev-server"
+    "start": "webpack-dev-server",
+    "watch": "./node_modules/.bin/webpack --watch --progress --config webpack.config.js"
   },
   "dependencies": {
     "matter": "^0.2.0",
@@ -12,11 +13,18 @@
     "matter-wrap": "^0.2.0",
     "phaser": "^3.16.2",
     "phaser-matter-collision-plugin": "^0.10.2",
-    "poly-decomp": "^0.3.0"
+    "poly-decomp": "^0.3.0",
+    "webpack-cli": "^3.3.1",
+    "webpack-dev-server": "^2.11.0"
   },
   "devDependencies": {
+    "babel": "^6.5.2",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^6.4.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.16.0",
     "raw-loader": "^0.5.1",
-    "webpack": "^3.4.1",
+    "webpack": "^2.7.0",
     "webpack-dev-server": "^2.11.0"
   }
 }

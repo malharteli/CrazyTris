@@ -39,7 +39,7 @@ export default class MainScene extends Phaser.Scene {
       100,
       300
     );
-    this.matter.add.polygon(100, 200, 6, 75);
+    this.matter.add.polygon(100, 200, 6, 75, 0x0000ff);
     this.matter.add.fromVertices(
       200,
       200,
@@ -47,6 +47,7 @@ export default class MainScene extends Phaser.Scene {
       75
     );
     this.matter.add.circle(100, 100, 50, 10);
+
     // Sensors
     const lSideSensor = this.matter.add.rectangle(
       10,
@@ -63,12 +64,23 @@ export default class MainScene extends Phaser.Scene {
       { isStatic: true, isSensor: true }
     );
     //const lSideSensor- detects if objects are hitting the left side
+    this.matterCollision.addOnCollideStart({
+      objectA: lSideSensor,
+      callback: eventData => {
+        console.log("left sensor", eventData);
+      }
+    });
     //const rSideSensor- detects if objects are hitting the right side
-
+    this.matterCollision.addOnCollideStart({
+      objectA: rSideSensor,
+      callback: eventData => {
+        console.log("right sensor", eventData);
+      }
+    });
     // const sensor = this.matter.add.rectangle(game.config.width/2, game.config.height-25, game.config.width, 50, { isStatic: true, isSensor: true });
     let sensorList = [];
     let px = 1;
-    while (px < 20) {
+    while (px < 2) {
       const sensor = this.matter.add.rectangle(
         game.config.width / 2,
         game.config.height - 25 * px,
@@ -80,11 +92,67 @@ export default class MainScene extends Phaser.Scene {
       this.matterCollision.addOnCollideStart({
         objectA: testBlock,
         callback: eventData => {
-          console.log("sensor detection");
+          let toBeSliced = [];
+          let toBeCreated = [];
+          let eventInterval = 4000
+          let vertices = eventData.bodyB.parts[0].vertices;
+          let pointsArr = [];
+          setInterval(
+          vertices.forEach(vertex => {
+            pointsArr.push(vertex.x, vertex.y);
+          }),eventInterval)
+          let slicedPolygons = setInterval(PolyK.Slice(
+            pointsArr,
+            sensor.parts[0].vertices[1].x,
+            sensor.parts[0].vertices[1].y,
+            sensor.parts[0].vertices[0].x,
+            sensor.parts[0].vertices[0].y
+          ), eventInterval);
+          console.log("slicedPolygon", slicedPolygons)
+          if (slicedPolygons && !eventData.bodyB.isSensor) {
+            console.log('slicethePolys!')
+            toBeSliced.push(eventData.bodyB);
+            slicedPolygons.forEach(points => {
+              toBeCreated.push(points);
+            });
+            console.log('blockToBeCreated',  toBeCreated)
+          }
+          console.log("to Be Sliced Block", toBeSliced);
+          toBeSliced.forEach(
+            function(body) {
+              console.log('slicing')
+              this.matter.world.remove(body);
+            }.bind(this)
+          );
+          console.log("toBeCreated Block", toBeCreated);
+          toBeCreated.forEach(
+            function(points) {
+              let polyObject = [];
+              for (let i = 0; i < points.length / 2; i++) {
+                polyObject.push({
+                  x: points[i * 2],
+                  y: points[i * 2 + 1]
+                });
+              }
+              // console.log('list of object positions', polyObject)
+              let sliceCenter = Phaser.Physics.Matter.Matter.Vertices.centre(
+                polyObject
+              );
+              this.matter.add.fromVertices(
+                sliceCenter.x,
+                sliceCenter.y,
+                polyObject,
+                {
+                  isStatic: false
+                }
+              );
+            }.bind(this)
+          );
         }
-      })
+
+      });
       sensorList.push(sensor);
-      px++
+      px++;
     }
     console.log(this.matter.world.localWorld.bodies);
     this.lineGraphics = this.add.graphics(2);
