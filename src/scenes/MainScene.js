@@ -39,14 +39,16 @@ export default class MainScene extends Phaser.Scene {
       100,
       300
     );
-    this.matter.add.polygon(100, 200, 6, 75, 0x0000ff);
+    this.matter.add.polygon(100, 200, 6, 75);
     this.matter.add.fromVertices(
       200,
       200,
       [0, 20, 84, 20, 84, 0, 120, 50, 84, 100, 84, 80, 0, 80],
-      75
+      75,
+      0x0000ff,
+      0.1
     );
-    this.matter.add.circle(100, 100, 50, 10);
+    this.matter.add.circle(100, 100, 50, 10, 0x0000ff, 0.2);
 
     // Sensors
     const lSideSensor = this.matter.add.rectangle(
@@ -68,6 +70,7 @@ export default class MainScene extends Phaser.Scene {
       objectA: lSideSensor,
       callback: eventData => {
         console.log("left sensor", eventData);
+        // this.matter.world.remove(eventData.bodyB);
       }
     });
     //const rSideSensor- detects if objects are hitting the right side
@@ -75,8 +78,10 @@ export default class MainScene extends Phaser.Scene {
       objectA: rSideSensor,
       callback: eventData => {
         console.log("right sensor", eventData);
+        // this.matter.world.remove(eventData.bodyB);
       }
     });
+
     // const sensor = this.matter.add.rectangle(game.config.width/2, game.config.height-25, game.config.width, 50, { isStatic: true, isSensor: true });
     let sensorList = [];
     let px = 1;
@@ -89,38 +94,50 @@ export default class MainScene extends Phaser.Scene {
         { isStatic: true, isSensor: true }
       );
       // MatterCollission
-      this.matterCollision.addOnCollideStart({
+      this.matterCollision.addOnCollideActive({
         objectA: testBlock,
         callback: eventData => {
           let toBeSliced = [];
           let toBeCreated = [];
-          let eventInterval = 4000
+          let eventInterval = 34;
+
           let vertices = eventData.bodyB.parts[0].vertices;
           let pointsArr = [];
           setInterval(
-          vertices.forEach(vertex => {
-            pointsArr.push(vertex.x, vertex.y);
-          }),eventInterval)
-          let slicedPolygons = setInterval(PolyK.Slice(
+            vertices.forEach(vertex => {
+              pointsArr.push(vertex.x, vertex.y);
+            }),
+            eventInterval
+          );
+          let slicedPolygons = PolyK.Slice(
             pointsArr,
             sensor.parts[0].vertices[1].x,
             sensor.parts[0].vertices[1].y,
             sensor.parts[0].vertices[0].x,
             sensor.parts[0].vertices[0].y
-          ), eventInterval);
-          console.log("slicedPolygon", slicedPolygons)
-          if (slicedPolygons && !eventData.bodyB.isSensor) {
-            console.log('slicethePolys!')
+          );
+          slicedPolygons.concat(
+            PolyK.Slice(
+              pointsArr,
+              sensor.parts[0].vertices[2].x,
+              sensor.parts[0].vertices[2].y,
+              sensor.parts[0].vertices[3].x,
+              sensor.parts[0].vertices[3].y
+            )
+          );
+          console.log("slicedPolygon", slicedPolygons);
+          if (slicedPolygons && !eventData.bodyB.isStatic) {
+            console.log("slicethePolys!");
             toBeSliced.push(eventData.bodyB);
             slicedPolygons.forEach(points => {
               toBeCreated.push(points);
             });
-            console.log('blockToBeCreated',  toBeCreated)
+            console.log("blockToBeCreated", toBeCreated);
           }
           console.log("to Be Sliced Block", toBeSliced);
           toBeSliced.forEach(
             function(body) {
-              console.log('slicing')
+              console.log("slicing");
               this.matter.world.remove(body);
             }.bind(this)
           );
@@ -148,12 +165,18 @@ export default class MainScene extends Phaser.Scene {
               );
             }.bind(this)
           );
+          this.matter.world.localWorld.bodies.forEach(body=>{
+            const {min, max} = body.bounds
+            if ((max.x - min.x<50)|| (max.y-min.y < 50)){
+              this.matter.world.remove(body)
+            }
+          })
         }
-
       });
       sensorList.push(sensor);
       px++;
     }
+
     console.log(this.matter.world.localWorld.bodies);
     this.lineGraphics = this.add.graphics(2);
     this.input.on("pointerdown", this.startDrawing, this);
