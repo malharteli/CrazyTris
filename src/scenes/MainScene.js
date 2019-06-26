@@ -88,7 +88,7 @@ export default class MainScene extends Phaser.Scene {
     while (px < 2) {
       const sensor = this.matter.add.rectangle(
         game.config.width / 2,
-        game.config.height - 25 * px,
+        game.config.height - 100 * px,
         game.config.width,
         50,
         { isStatic: true, isSensor: true }
@@ -165,12 +165,12 @@ export default class MainScene extends Phaser.Scene {
               );
             }.bind(this)
           );
-          this.matter.world.localWorld.bodies.forEach(body=>{
-            const {min, max} = body.bounds
-            if ((max.x - min.x<50)|| (max.y-min.y < 50)){
-              this.matter.world.remove(body)
-            }
-          })
+          // this.matter.world.localWorld.bodies.forEach(body=>{
+          //   const {min, max} = body.bounds
+          //   if ((max.x - min.x<50)|| (max.y-min.y < 50)){
+          //     this.matter.world.remove(body)
+          //   }
+          // })
         }
       });
       sensorList.push(sensor);
